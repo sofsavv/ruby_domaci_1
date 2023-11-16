@@ -3,9 +3,27 @@ require "google_drive"
 session = GoogleDrive::Session.from_config("config.json")
 ws = session.spreadsheet_by_key("1ZwnNhN4Uj96DklpoDbJylT8tNVakcjoJK3m9cghfoqQ").worksheets[0]
 
-class Column
+class MyColumn
 
-    
+    attr_accessor :table, :header, :worksheet, :col_idx
+
+    def initialize(table, header, col_idx)
+        @table = table
+        @header = header
+        @col_idx = col_idx
+    end
+
+    def [](idx)
+        @header[idx]
+    end
+
+    def []= (idx, data)
+        return unless idx
+        @header[idx] = data
+        @worksheet[idx + @row_start, @col_idx + @col_start] = data
+        @worksheet.save
+    end
+
 
 end
 
@@ -61,7 +79,9 @@ class MyTable
     private def col(col_name)
         col_idx = @headers.index(col_name)
         return unless col_idx
-        @table.transpose[col_idx]
+        @arr = @table.transpose[col_idx]
+        # @table.transpose[col_idx]
+        MyColumn.new(self, @arr, col_idx)
     end
 
     def [](col_name)
@@ -115,7 +135,7 @@ end
 
 t = MyTable.new(ws)
 puts t["prva kolona"][2]
-t["prva kolona"][2]= 99
+# t["prva kolona"][2]= 99
 # t.[]=("prva kolona", 2, 99)
 # puts t["prva"][2]
 # puts t.row(3)
